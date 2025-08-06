@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Enviar mensaje anónimo</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-image: url("fondo.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 15px;
+      font-size: 1.1rem;
+      resize: none;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #ff80ab;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff5c9b;
+    }
+
+    .burbujas-redes {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .burbuja {
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease-in-out;
+      width: 50px;
+      height: 50px;
+    }
+
+    .burbuja:hover {
+      transform: scale(1.1);
+    }
+
+    .burbuja img {
+      width: 30px;
+      height: 30px;
+    }
+
+    @media (max-width: 480px) {
+      .burbuja {
+        width: 45px;
+        height: 45px;
+      }
+      .burbuja img {
+        width: 26px;
+        height: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>💌 Envíame un mensaje anónimo</h1>
+
+  <form id="formulario">
+    <textarea id="mensaje" placeholder="Escribe tu mensaje aquí..." maxlength="1000" required></textarea>
+    <button type="submit">Enviar</button>
+
+    <!-- Burbujas de redes sociales -->
+    <div class="burbujas-redes">
+      <a href="https://x.com/cclesbicas?s=21" class="burbuja" target="_blank" title="Twitter">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter">
+      </a>
+      <a href="https://www.instagram.com/cclesbicas?igsh=NW85Nnc2eTE5NGpt" class="burbuja" target="_blank" title="Instagram">
+        <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram">
+      </a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById("formulario").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const mensaje = document.getElementById("mensaje").value.trim();
+
+      if (mensaje.length === 0) {
+        alert("Por favor escribe un mensaje.");
+        return;
+      }
+
+      fetch("/enviar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensaje })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ Mensaje enviado con éxito.");
+          document.getElementById("mensaje").value = "";
+        } else {
+          alert("❌ Hubo un error al enviar el mensaje.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("❌ Error de conexión.");
+      });
+    });
+  </script>
+</body>
+</html>
