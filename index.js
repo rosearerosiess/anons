@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // 👈 Render asigna el puerto
 
 // Configurar sesiones
 app.use(session({
@@ -19,7 +19,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir carpeta public
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Ruta principal (para evitar "Cannot GET /")
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Ruta para enviar mensajes
 app.post("/enviar", (req, res) => {
@@ -97,7 +102,7 @@ app.use("/mensajes.html", (req, res, next) => {
   }
 });
 
-// Iniciar el servidor en todas las interfaces (para que funcione en celular)
+// Iniciar el servidor
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
