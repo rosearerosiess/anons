@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-image: url('fondo.jpg'); /* Aquí va tu imagen de fondo */
+      background-image: url('fondo.jpg');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -142,7 +142,7 @@
         <div class="autor">Anónimo</div>
         <div class="contenido" id="contenido-${index}">${contenidoMostrado}</div>
         <div class="botones">
-          ${esLargo ? `<button class="ver-mas" onclick="toggleVerMas(${index}, \`${contenido.replace(/`/g, "\\`")}\`)">Ver más...</button>` : ""}
+          ${esLargo ? `<button class="ver-mas" onclick="toggleVerMas(${index}, \`${contenido.replace(/`/g, "\\`")}\`, this)">Ver más...</button>` : ""}
           <button class="borrar" onclick="borrarMensaje(${index})">Borrar</button>
         </div>
       `;
@@ -150,10 +150,8 @@
       return div;
     }
 
-    function toggleVerMas(index, textoCompleto) {
+    function toggleVerMas(index, textoCompleto, boton) {
       const contenido = document.getElementById(`contenido-${index}`);
-      const boton = contenido.nextElementSibling.querySelector(".ver-mas");
-
       if (boton.innerText === "Ver más...") {
         contenido.innerText = textoCompleto;
         boton.innerText = "Ver menos";
