@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 3000; // 👈 Render asigna el puerto
+const PORT = process.env.PORT || 3000; // Para Render
 
 // Configurar sesiones
 app.use(session({
@@ -21,12 +21,21 @@ app.use(express.urlencoded({ extended: true }));
 // Servir carpeta public
 app.use(express.static(path.join(__dirname, "public")));
 
-// Ruta principal (para evitar "Cannot GET /")
+// Ruta principal
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Ruta para enviar mensajes
+// Middleware para proteger APIs
+function protegerAPI(req, res, next) {
+  if (req.session.autenticado) {
+    next();
+  } else {
+    res.status(403).json({ error: "No autorizado" });
+  }
+}
+
+// Ruta para enviar mensajes (pública)
 app.post("/enviar", (req, res) => {
   const nuevoMensaje = req.body.mensaje;
 
@@ -50,16 +59,16 @@ app.post("/enviar", (req, res) => {
   });
 });
 
-// Ruta para obtener mensajes
-app.get("/api/messages", (req, res) => {
+// Ruta para obtener mensajes (protegida)
+app.get("/api/messages", protegerAPI, (req, res) => {
   fs.readFile("messages.json", "utf8", (err, data) => {
     if (err) return res.status(500).json({ error: "Error al leer mensajes" });
     res.json(JSON.parse(data));
   });
 });
 
-// Ruta para borrar un mensaje por índice
-app.delete("/api/messages/:index", (req, res) => {
+// Ruta para borrar un mensaje por índice (protegida)
+app.delete("/api/messages/:index", protegerAPI, (req, res) => {
   const index = parseInt(req.params.index);
 
   fs.readFile("messages.json", "utf8", (err, data) => {
@@ -106,3 +115,4 @@ app.use("/mensajes.html", (req, res, next) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
