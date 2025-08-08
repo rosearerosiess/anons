@@ -3,7 +3,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  font-size: 18px; 
+  font-size: 24px; 
   background-image: url("fondo.jpg"); /* asegúrate que el nombre del archivo sea exacto */
   background-size: cover;
   background-position: center;
