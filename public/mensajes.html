@@ -134,8 +134,8 @@
       const fecha = tiempoTranscurrido(mensaje.fecha);
       const contenido = mensaje.mensaje;
 
-      const esLargo = contenido.length > 80;
-      const contenidoMostrado = esLargo ? contenido.slice(0, 80) + "..." : contenido;
+      const esLargo = contenido.length > 100;
+      const contenidoMostrado = esLargo ? contenido.slice(0, 100) + "..." : contenido;
 
       div.innerHTML = `
         <div class="fecha">${fecha}</div>
@@ -156,7 +156,7 @@
         contenido.innerText = textoCompleto;
         boton.innerText = "Ver menos";
       } else {
-        contenido.innerText = textoCompleto.slice(0, 80) + "...";
+        contenido.innerText = textoCompleto.slice(0, 100) + "...";
         boton.innerText = "Ver más...";
       }
     }
