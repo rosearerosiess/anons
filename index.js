@@ -1,110 +1,79 @@
 const express = require("express");
-const session = require("express-session");
 const fs = require("fs");
 const path = require("path");
-
 const app = express();
-const PORT = process.env.PORT || 3000; // Para Render
+const PORT = process.env.PORT || 3000;
 
-// Configurar sesiones
-app.use(session({
-  secret: "lilyrosedepp",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 * 30 } // 30 días
-}));
-
-// Leer JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-// Servir carpeta public
-app.use(express.static(path.join(__dirname, "public")));
-
-// Ruta principal (para evitar "Cannot GET /")
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// Obtener mensajes
+app.get("/api/messages", (req, res) => {
+  try {
+    const data = fs.readFileSync("messages.json", "utf8");
+    const mensajes = JSON.parse(data);
+    res.json(mensajes);
+  } catch (err) {
+    console.error("Error leyendo mensajes:", err);
+    res.status(500).json({ error: "Error leyendo mensajes" });
+  }
 });
 
-// Ruta para enviar mensajes
+// Enviar mensaje (ahora con lectura/escritura inmediata para evitar pérdida)
 app.post("/enviar", (req, res) => {
-  const nuevoMensaje = req.body.mensaje;
-
+  const nuevoMensaje = req.body.mensaje?.trim();
   if (!nuevoMensaje) {
     return res.status(400).json({ error: "Mensaje vacío" });
   }
 
-  fs.readFile("messages.json", "utf8", (err, data) => {
-    if (err) return res.status(500).json({ error: "Error leyendo mensajes" });
-
+  try {
+    // Leer el archivo actualizado
+    const data = fs.readFileSync("messages.json", "utf8");
     const mensajes = JSON.parse(data);
+
+    // Agregar mensaje
     mensajes.push({
       mensaje: nuevoMensaje,
       fecha: new Date().toISOString()
     });
 
-    fs.writeFile("messages.json", JSON.stringify(mensajes, null, 2), err => {
-      if (err) return res.status(500).json({ error: "Error guardando mensaje" });
-      res.status(200).json({ success: true });
-    });
-  });
+    // Guardar inmediatamente
+    fs.writeFileSync("messages.json", JSON.stringify(mensajes, null, 2), "utf8");
+
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Error guardando mensaje:", err);
+    res.status(500).json({ error: "Error guardando mensaje" });
+  }
 });
 
-// Ruta para obtener mensajes
-app.get("/api/messages", (req, res) => {
-  fs.readFile("messages.json", "utf8", (err, data) => {
-    if (err) return res.status(500).json({ error: "Error al leer mensajes" });
-    res.json(JSON.parse(data));
-  });
-});
-
-// Ruta para borrar un mensaje por índice
+// Borrar mensaje por índice
 app.delete("/api/messages/:index", (req, res) => {
   const index = parseInt(req.params.index);
+  try {
+    const data = fs.readFileSync("messages.json", "utf8");
+    let mensajes = JSON.parse(data);
 
-  fs.readFile("messages.json", "utf8", (err, data) => {
-    if (err) return res.status(500).json({ error: "Error al leer mensajes" });
-
-    const mensajes = JSON.parse(data);
     if (index < 0 || index >= mensajes.length) {
-      return res.status(400).json({ error: "Índice inválido" });
+      return res.status(404).json({ error: "Mensaje no encontrado" });
     }
 
     mensajes.splice(index, 1);
 
-    fs.writeFile("messages.json", JSON.stringify(mensajes, null, 2), err => {
-      if (err) return res.status(500).json({ error: "Error al borrar mensaje" });
-      res.json({ success: true });
-    });
-  });
-});
+    fs.writeFileSync("messages.json", JSON.stringify(mensajes, null, 2), "utf8");
 
-// Autenticación
-const CLAVE_CORRECTA = "lilyrosedepp";
-
-app.post("/login", (req, res) => {
-  const claveIngresada = req.body.clave;
-
-  if (claveIngresada === CLAVE_CORRECTA) {
-    req.session.autenticado = true;
-    res.redirect("/mensajes.html");
-  } else {
-    res.send("❌ Clave incorrecta. <a href='/login.html'>Volver</a>");
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error borrando mensaje:", err);
+    res.status(500).json({ error: "Error borrando mensaje" });
   }
 });
 
-// Proteger la bandeja
-app.use("/mensajes.html", (req, res, next) => {
-  if (req.session.autenticado) {
-    next();
-  } else {
-    res.redirect("/login.html");
-  }
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Iniciar el servidor
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-
